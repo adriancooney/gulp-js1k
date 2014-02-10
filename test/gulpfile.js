@@ -16,5 +16,11 @@ gulp.task("big", function() {
 		.pipe(gulp.dest("./js1k/"));
 });
 
+gulp.task("shim", function() {
+	gulp.src("through2.js")
+		.pipe(js1k(true))
+		.pipe(gulp.dest("./js1k/"));
+});
+
 // Run tests
 gulp.task("test", ["big", "little"]);

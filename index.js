@@ -1,8 +1,10 @@
 var uglify = require("uglify-js"),
 	gulputil = require("gulp-util"),
+	fs = require("fs"),
+	Vinyl = require("vinyl"),
 	through = require("through2");
 
-module.exports = function js1k() {
+module.exports = function js1k(shim) {
 	return through.obj(function(file, encoding, callback) {
 		// Uglify the contents
 		var minified = uglify.minify(file.contents.toString("utf8"), { fromString: true }).code,	
@@ -14,6 +16,17 @@ module.exports = function js1k() {
 		else gulputil.log("gulp-js1k", gulputil.colors.green("✔ Less than 1024 bytes. " + (1024 - length) + " characters left (" + length + " bytes in size). Good to go."));
 
 		this.push(file);
+
+		if(shim) {
+			var shimFile = new Vinyl({
+				cwd: file.cwd,
+				base: file.base,
+				path: file.path + '-shim.html',
+				contents: new Buffer(gulputil.template(fs.readFileSync(__dirname + "/shim.html"), { file: file, script: minified }))
+			});
+
+			this.push(shimFile);
+		}
 
 		callback();
 	});
